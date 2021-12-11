@@ -6,7 +6,7 @@ import { getAllPosQuery, positionCreateBody, sendMail, positionUpdateBody } from
 import { MailerService } from '@nestjs-modules/mailer';
 import { EventEmitter } from "stream";
 import { applicants } from "src/applicant/applicant.entity";
-import { HelperPosApp, ValidationBody } from "src/helper/helper.service";
+import { HelperPosApp, ValidationBody, VerifyUser } from "src/helper/helper.service";
 
 @Injectable()
 export class listener {
@@ -79,7 +79,8 @@ export class PositionService {
         private readonly positionRepository: Repository<positions>,
         private readonly valid: ValidationBody,
         private readonly helper: HelperPosApp,
-        private readonly listener: listener
+        private readonly listener: listener,
+        private readonly verify: VerifyUser
     ) {
         listener.registerAllListeners();
     }
@@ -107,9 +108,10 @@ export class PositionService {
         }
     }
 
-    async createPos(body: positionCreateBody): Promise<void> {
+    async createPos(body: positionCreateBody, header: object): Promise<void> {
         try {
             if(this.valid.checkValidBody(body)) {
+                const dataVerify = this.verify.verifyToken(header); // доделать
                 const bodyToDB = await this.helper.prepareBodyToAdd(body);
                 await this.positionRepository.save(bodyToDB);
                 // this.listener.ee.emit('sendCreateUpdateMail', body);
@@ -121,9 +123,10 @@ export class PositionService {
         }
     }
 
-    async updatePos(id: string, body: positionUpdateBody): Promise<void> {
+    async updatePos(id: string, body: positionUpdateBody, header: object): Promise<void> {
         try {
             if(this.valid.checkValidBody(body)) {
+                const dataVerify = this.verify.verifyToken(header); // доделать
                 const bodyToDB = await this.helper.prepareBodyToAdd(body);
                 await this.positionRepository.update({id: Number(id)}, bodyToDB);
                 return;
@@ -134,8 +137,9 @@ export class PositionService {
         }
     }
 
-    async removePosition(id: string): Promise<void> {
+    async removePosition(id: string, header: object): Promise<void> {
         try {
+            const dataVerify = this.verify.verifyToken(header); // доделать
             await this.positionRepository.delete(id);
             return;
         } catch(err) {

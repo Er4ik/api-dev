@@ -7,9 +7,10 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { UserModule } from './user/user.module';
 import { HelperModule } from './helper/helper.module';
 import { FileModule } from './file/file.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forRoot(), PositionModule, ApplicantModule, UserModule, HelperModule, FileModule,
+  imports: [TypeOrmModule.forRoot(), PositionModule, ApplicantModule, UserModule, HelperModule, FileModule, AuthModule,
   MailerModule.forRootAsync({
       useFactory: () => ({
         transport: {

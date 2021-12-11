@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
 import { applicantCreateBody, applicantUpdateBody } from "src/applicant/applicant.interface";
 import { getAllPosQuery, positionCreateBody, positionUpdateBody } from "src/position/position.interface";
 import { Like } from "typeorm";
@@ -69,5 +70,16 @@ export class HelperPosApp {
             bodyToDB[key] = body[key];
         }
         return bodyToDB;
+    }
+}
+
+@Injectable()
+export class VerifyUser {
+    constructor(private jwtService: JwtService) {}
+    
+    async verifyToken(header: object) {
+        const token = header['authorization'].split(' ')[1];
+        const verToken = await this.jwtService.verify(token);
+        return verToken;
     }
 }

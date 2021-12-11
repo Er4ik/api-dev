@@ -16,6 +16,5 @@ export interface applicantUpdateBody {
 export interface getAllApplQuery {
     readonly categories?: string,
     readonly level?: string,
-    readonly tag?: string,
     readonly salary?: number
 }

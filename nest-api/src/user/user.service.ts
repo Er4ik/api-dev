@@ -1,15 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import * as bcrypt from "bcryptjs";
 import { createUser } from "./user.interface";
+import * as bcrypt from "bcryptjs";
 
 @Injectable()
-
-export class AuthService {
+export class RegistrService {
     constructor(private jwtService: JwtService) {}
 
     async registration(body: createUser): Promise<string> {
-        const hashPassword: string = await bcrypt.hash(body.password, 500);
+        const hashPassword: string = await bcrypt.hash(body.password, 5);
         return hashPassword;
     }
 
@@ -19,4 +18,5 @@ export class AuthService {
     }
 }
 
+@Injectable()
 export class UserService {}

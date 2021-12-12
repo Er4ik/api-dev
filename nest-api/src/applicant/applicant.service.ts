@@ -92,7 +92,7 @@ export class ApplicantService {
 	async removeAppl(header: object): Promise<void> {
 		try {
 			const dataVerify = this.verify.verifyToken(header); // доделать
-			await this.applicantRepository.delete(); // add id
+			await this.applicantRepository.delete(""); // add id
 			return;
 		} catch (err) {
 			throw new HttpException(

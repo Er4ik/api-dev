@@ -10,7 +10,6 @@ import {
 	Patch,
 	Post,
 	Query,
-	Request,
 	UseGuards,
 } from '@nestjs/common';
 import { AuthService } from 'src/auth/auth.service';
@@ -50,12 +49,10 @@ export class ApplicantController {
 	@HttpCode(HttpStatus.CREATED)
 	async updateApplicant(
 		@Body() updateApplDto: UpdateApplicantDto,
-		@Param('id') id: string,
 		@Headers() header: object,
 	): Promise<void> {
 		return await this.applicantService.updateAppl(
 			updateApplDto,
-			id,
 			header,
 		);
 	}
@@ -63,10 +60,7 @@ export class ApplicantController {
 	@Delete()
 	@UseGuards(AuthService)
 	@HttpCode(HttpStatus.NO_CONTENT)
-	async removeApplicant(
-		@Param('id') id: string,
-		@Headers() header: object,
-	): Promise<void> {
-		return await this.applicantService.removeAppl(id, header);
+	async removeApplicant(@Headers() header: object): Promise<void> {
+		return await this.applicantService.removeAppl(header);
 	}
 }

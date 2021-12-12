@@ -69,17 +69,13 @@ export class ApplicantService {
 		}
 	}
 
-	async updateAppl(
-		body: applicantUpdateBody,
-		id: string,
-		header: object,
-	): Promise<void> {
+	async updateAppl(body: applicantUpdateBody, header: object): Promise<void> {
 		try {
 			if (this.valid.checkValidBody(body)) {
 				const dataVerify = this.verify.verifyToken(header); // доделать
 				const bodyToDB = await this.helper.prepareBodyToAdd(body);
 				await this.applicantRepository.update(
-					{ id: Number(id) },
+					{ id: Number() }, // add id
 					bodyToDB,
 				);
 				return;
@@ -93,10 +89,10 @@ export class ApplicantService {
 		}
 	}
 
-	async removeAppl(id: string, header: object): Promise<void> {
+	async removeAppl(header: object): Promise<void> {
 		try {
 			const dataVerify = this.verify.verifyToken(header); // доделать
-			await this.applicantRepository.delete(id);
+			await this.applicantRepository.delete(); // add id
 			return;
 		} catch (err) {
 			throw new HttpException(

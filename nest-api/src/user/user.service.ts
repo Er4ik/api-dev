@@ -79,7 +79,7 @@ export class UserService {
                     name: body.name,
                     email: body.email,
                     password: password,
-					photo: "" //доделать
+					photo: "artem" //доделать
 
                 }
                 await this.userRepository.save(bodyToDB);

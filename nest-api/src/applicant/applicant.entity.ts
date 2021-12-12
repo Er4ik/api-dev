@@ -2,21 +2,21 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class applicants {
-  @PrimaryGeneratedColumn()
-  id: number;
+	@PrimaryGeneratedColumn()
+	id: number;
 
-  @Column()
-  level: string;
+	@Column()
+	level: string;
 
-  @Column()
-  language: string;
+	@Column()
+	language: string;
 
-  @Column()
-  categories: string;
+	@Column()
+	categories: string;
 
-  @Column()
-  salary: number;
+	@Column()
+	salary: number;
 
-  @Column()
-  id_user: number;
+	@Column()
+	id_user: number;
 }

@@ -2,27 +2,27 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class positions {
-  @PrimaryGeneratedColumn()
-  id: number;
+	@PrimaryGeneratedColumn()
+	id: number;
 
-  @Column()
-  company: string;
+	@Column()
+	company: string;
 
-  @Column()
-  category: string;
+	@Column()
+	category: string;
 
-  @Column()
-  level: string;
+	@Column()
+	level: string;
 
-  @Column()
-  language: string;
+	@Column()
+	language: string;
 
-  @Column()
-  description: string;
+	@Column()
+	description: string;
 
-  @Column()
-  salary: number;
+	@Column()
+	salary: number;
 
-  @Column()
-  id_user: number;
+	@Column()
+	id_user: number;
 }

@@ -17,6 +17,4 @@ export class User {
 	@Column()
 	photo: string;
 
-	@Column()
-	role: string;
 }

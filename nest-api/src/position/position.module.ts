@@ -9,6 +9,7 @@ import {
 	VerifyUser,
 } from 'src/helper/helper.service';
 import { User } from 'src/user/user.entity';
+import { Auth } from 'src/user/user.service';
 import { PositionController } from './position.controller';
 import { Position } from './position.entity';
 import { listener, PositionService } from './position.service';
@@ -30,6 +31,7 @@ import { listener, PositionService } from './position.service';
 		HelperPosApp,
 		AuthService,
 		VerifyUser,
+		Auth,
 	],
 	controllers: [PositionController],
 })

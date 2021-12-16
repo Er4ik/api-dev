@@ -16,6 +16,7 @@ import {
 	ValidationBody,
 	VerifyUser,
 } from 'src/helper/helper.service';
+import { User } from 'src/user/user.entity';
 
 @Injectable()
 export class listener {
@@ -90,6 +91,8 @@ export class PositionService {
 		private readonly helper: HelperPosApp,
 		private readonly listener: listener,
 		private readonly verify: VerifyUser,
+		@InjectRepository(User)
+		private readonly userRepository: Repository<User>,
 	) {
 		listener.registerAllListeners();
 	}
@@ -126,8 +129,14 @@ export class PositionService {
 	async createPos(body: positionCreateBody, header: object): Promise<void> {
 		try {
 			if (this.valid.checkValidBody(body)) {
-				const dataVerify = this.verify.verifyToken(header); // доделать
+				const dataVerify: object = this.verify.verifyToken(header);
+				const user = await this.userRepository.findOne({
+					where: {
+						email: dataVerify['email']
+					}
+				});
 				const bodyToDB = await this.helper.prepareBodyToAdd(body);
+				bodyToDB['id_user'] = user.id;
 				await this.positionRepository.save(bodyToDB);
 				// this.listener.ee.emit('sendCreateUpdateMail', body);
 				return;
@@ -148,10 +157,15 @@ export class PositionService {
 	): Promise<void> {
 		try {
 			if (this.valid.checkValidBody(body)) {
-				const dataVerify = this.verify.verifyToken(header); // доделать
+				const dataVerify: object = this.verify.verifyToken(header);
+				const user = await this.userRepository.findOne({
+					where: {
+						email: dataVerify['email']
+					}
+				});
 				const bodyToDB = await this.helper.prepareBodyToAdd(body);
 				await this.positionRepository.update(
-					{ id: Number(id) },
+					{ id: Number(id), id_user: user.id },
 					bodyToDB,
 				);
 				return;
@@ -167,8 +181,13 @@ export class PositionService {
 
 	async removePosition(id: string, header: object): Promise<void> {
 		try {
-			const dataVerify = this.verify.verifyToken(header); // доделать
-			await this.positionRepository.delete(id);
+			const dataVerify = this.verify.verifyToken(header);
+			const user = await this.userRepository.findOne({
+				where: {
+					email: dataVerify['email']
+				}
+			});
+			await this.positionRepository.delete({id: Number(id), id_user: user.id});
 			return;
 		} catch (err) {
 			throw new HttpException(

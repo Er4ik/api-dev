@@ -31,6 +31,7 @@ import { listener, PositionService } from './position.service';
 		HelperPosApp,
 		AuthService,
 		VerifyUser,
+		Auth,
 	],
 	controllers: [PositionController],
 })

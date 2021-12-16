@@ -8,6 +8,7 @@ import {
 	VerifyUser,
 } from 'src/helper/helper.service';
 import { User } from 'src/user/user.entity';
+import { Auth } from 'src/user/user.service';
 import { ApplicantController } from './applicant.controller';
 import { Applicant } from './applicant.entity';
 import { ApplicantService } from './applicant.service';
@@ -28,6 +29,7 @@ import { ApplicantService } from './applicant.service';
 		HelperPosApp,
 		AuthService,
 		VerifyUser,
+		Auth,
 	],
 	controllers: [ApplicantController],
 })

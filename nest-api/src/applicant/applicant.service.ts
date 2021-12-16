@@ -92,7 +92,6 @@ export class ApplicantService {
 				});
 
 				const bodyToDB = await this.helper.prepareBodyToAdd(body);
-				bodyToDB['id_user'] = user.id;
 
 				await this.applicantRepository.update(
 					{ id_user: Number(user.id), id: Number(id) },

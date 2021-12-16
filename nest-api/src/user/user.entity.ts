@@ -8,15 +8,15 @@ export class User {
 	@Column()
 	name: string;
 
-    @Column()
+	@Column()
 	email: string;
 
-    @Column()
+	@Column()
 	password: string;
 
-    @Column()
+	@Column()
 	photo: string;
 
-    @Column()
+	@Column()
 	role: string;
 }

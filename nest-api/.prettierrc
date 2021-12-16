@@ -3,5 +3,6 @@
 	"trailingComma": "all",
 	"useTabs": true,
 	"tabWidth": 4,
-	"quoteProps": "as-needed"
+	"quoteProps": "as-needed",
+	"arrowParens":"always"
 }

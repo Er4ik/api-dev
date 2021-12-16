@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
-import { positions } from './position.entity';
+import { Position } from './position.entity';
 import {
 	getAllPosQuery,
 	positionCreateBody,
@@ -10,7 +10,7 @@ import {
 } from './position.interface';
 import { MailerService } from '@nestjs-modules/mailer';
 import { EventEmitter } from 'stream';
-import { applicants } from 'src/applicant/applicant.entity';
+import { Applicant } from 'src/applicant/applicant.entity';
 import {
 	HelperPosApp,
 	ValidationBody,
@@ -23,8 +23,8 @@ export class listener {
 
 	constructor(
 		private readonly mailerService: MailerService,
-		@InjectRepository(applicants)
-		private readonly applicantRepository: Repository<applicants>,
+		@InjectRepository(Applicant)
+		private readonly applicantRepository: Repository<Applicant>,
 	) {}
 
 	private async mailer(body: object): Promise<void> {
@@ -38,7 +38,7 @@ export class listener {
 			});
 	}
 
-	private async prepareApp(data: positionCreateBody): Promise<applicants[]> {
+	private async prepareApp(data: positionCreateBody): Promise<Applicant[]> {
 		if (data['japaneseRequired'] === true) {
 			const res = await this.applicantRepository.find({
 				where: {
@@ -84,8 +84,8 @@ export class listener {
 @Injectable()
 export class PositionService {
 	constructor(
-		@InjectRepository(positions)
-		private readonly positionRepository: Repository<positions>,
+		@InjectRepository(Position)
+		private readonly positionRepository: Repository<Position>,
 		private readonly valid: ValidationBody,
 		private readonly helper: HelperPosApp,
 		private readonly listener: listener,

@@ -5,8 +5,9 @@ import {
 	ValidationBody,
 	VerifyUser,
 } from 'src/helper/helper.service';
+import { User } from 'src/user/user.entity';
 import { Repository } from 'typeorm';
-import { applicants } from './applicant.entity';
+import { Applicant } from './applicant.entity';
 import {
 	applicantCreateBody,
 	applicantUpdateBody,
@@ -15,8 +16,10 @@ import {
 
 export class ApplicantService {
 	constructor(
-		@InjectRepository(applicants)
-		private readonly applicantRepository: Repository<applicants>,
+		@InjectRepository(Applicant)
+		private readonly applicantRepository: Repository<Applicant>,
+		@InjectRepository(User)
+		private readonly userRepository: Repository<User>,
 		private readonly valid: ValidationBody,
 		private readonly helper: HelperPosApp,
 		private readonly verify: VerifyUser,
@@ -54,8 +57,14 @@ export class ApplicantService {
 	async createAppl(body: applicantCreateBody, header: object): Promise<void> {
 		try {
 			if (this.valid.checkValidBody(body)) {
-				const dataVerify = this.verify.verifyToken(header); // доделать
+				const dataVerify = this.verify.verifyToken(header);
+
+				const user = await this.userRepository.findOne({
+					email: dataVerify['email'],
+				});
+
 				const bodyToDB = await this.helper.prepareBodyToAdd(body);
+				bodyToDB['id_user'] = user.id;
 
 				await this.applicantRepository.save(bodyToDB);
 				return;
@@ -69,13 +78,24 @@ export class ApplicantService {
 		}
 	}
 
-	async updateAppl(body: applicantUpdateBody, header: object): Promise<void> {
+	async updateAppl(
+		id: string,
+		body: applicantUpdateBody,
+		header: object,
+	): Promise<void> {
 		try {
 			if (this.valid.checkValidBody(body)) {
-				const dataVerify = this.verify.verifyToken(header); // доделать
+				const dataVerify = this.verify.verifyToken(header);
+
+				const user = await this.userRepository.findOne({
+					email: dataVerify['email'],
+				});
+
 				const bodyToDB = await this.helper.prepareBodyToAdd(body);
+				bodyToDB['id_user'] = user.id;
+
 				await this.applicantRepository.update(
-					{ id: Number() }, // add id
+					{ id_user: Number(user.id), id: Number(id) },
 					bodyToDB,
 				);
 				return;
@@ -89,10 +109,18 @@ export class ApplicantService {
 		}
 	}
 
-	async removeAppl(header: object): Promise<void> {
+	async removeAppl(id: string, header: object): Promise<void> {
 		try {
-			const dataVerify = this.verify.verifyToken(header); // доделать
-			await this.applicantRepository.delete(""); // add id
+			const dataVerify = this.verify.verifyToken(header);
+
+			const user = await this.userRepository.findOne({
+				email: dataVerify['email'],
+			});
+
+			await this.applicantRepository.delete({
+				id_user: user.id,
+				id: Number(id),
+			});
 			return;
 		} catch (err) {
 			throw new HttpException(

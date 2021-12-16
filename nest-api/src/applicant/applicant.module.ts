@@ -7,13 +7,14 @@ import {
 	ValidationBody,
 	VerifyUser,
 } from 'src/helper/helper.service';
+import { User } from 'src/user/user.entity';
 import { ApplicantController } from './applicant.controller';
-import { applicants } from './applicant.entity';
+import { Applicant } from './applicant.entity';
 import { ApplicantService } from './applicant.service';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([applicants]),
+		TypeOrmModule.forFeature([Applicant, User]),
 		JwtModule.register({
 			secret: 'SECRET',
 			signOptions: {

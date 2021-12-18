@@ -3,7 +3,7 @@
 	"host": "localhost",
 	"port": 3306,
 	"username": "root",
-	"password": "10042003",
+	"password": "password",
 	"database": "api_dev",
 	"entities": ["dist/**/*.entity{.ts,.js}"],
 	"synchronize": true

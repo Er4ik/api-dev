@@ -3,7 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import {
-	HelperPosApp,
+	PreparePositionApplicant,
 	ValidationBody,
 	VerifyUser,
 } from 'src/helper/helper.service';
@@ -26,7 +26,7 @@ import { ApplicantService } from './applicant.service';
 	providers: [
 		ApplicantService,
 		ValidationBody,
-		HelperPosApp,
+		PreparePositionApplicant,
 		AuthService,
 		VerifyUser,
 		Auth,

@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Applicant } from 'src/applicant/applicant.entity';
 import { AuthService } from 'src/auth/auth.service';
 import {
-	HelperPosApp,
+	PreparePositionApplicant,
 	ValidationBody,
 	VerifyUser,
 } from 'src/helper/helper.service';
@@ -28,7 +28,7 @@ import { listener, PositionService } from './position.service';
 		PositionService,
 		listener,
 		ValidationBody,
-		HelperPosApp,
+		PreparePositionApplicant,
 		AuthService,
 		VerifyUser,
 		Auth,

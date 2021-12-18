@@ -1,11 +1,11 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { userAndBody } from 'src/helper/helper.interface';
 import {
-	HelperPosApp,
+	PreparePositionApplicant,
 	ValidationBody,
 	VerifyUser,
 } from 'src/helper/helper.service';
-import { User } from 'src/user/user.entity';
 import { Repository } from 'typeorm';
 import { Applicant } from './applicant.entity';
 import {
@@ -18,10 +18,8 @@ export class ApplicantService {
 	constructor(
 		@InjectRepository(Applicant)
 		private readonly applicantRepository: Repository<Applicant>,
-		@InjectRepository(User)
-		private readonly userRepository: Repository<User>,
 		private readonly valid: ValidationBody,
-		private readonly helper: HelperPosApp,
+		private readonly helper: PreparePositionApplicant,
 		private readonly verify: VerifyUser,
 	) {}
 
@@ -57,16 +55,9 @@ export class ApplicantService {
 	async createAppl(body: applicantCreateBody, header: object): Promise<void> {
 		try {
 			if (this.valid.checkValidBody(body)) {
-				const dataVerify = this.verify.verifyToken(header);
-
-				const user = await this.userRepository.findOne({
-					email: dataVerify['email'],
-				});
-
-				const bodyToDB = await this.helper.prepareBodyToAdd(body);
-				bodyToDB['id_user'] = user.id;
-
-				await this.applicantRepository.save(bodyToDB);
+				const dataUserAndBody: userAndBody =
+					await this.verify.callAllFunctions(body, header);
+				await this.applicantRepository.save(dataUserAndBody.bodyToDB);
 				return;
 			}
 			throw new HttpException(
@@ -85,17 +76,14 @@ export class ApplicantService {
 	): Promise<void> {
 		try {
 			if (this.valid.checkValidBody(body)) {
-				const dataVerify = this.verify.verifyToken(header);
-
-				const user = await this.userRepository.findOne({
-					email: dataVerify['email'],
-				});
-
-				const bodyToDB = await this.helper.prepareBodyToAdd(body);
-
+				const dataUserAndBody: userAndBody =
+					await this.verify.callAllFunctions(body, header);
 				await this.applicantRepository.update(
-					{ id_user: Number(user.id), id: Number(id) },
-					bodyToDB,
+					{
+						id_user: Number(dataUserAndBody.user.id),
+						id: Number(id),
+					},
+					dataUserAndBody.bodyToDB,
 				);
 				return;
 			}
@@ -110,14 +98,11 @@ export class ApplicantService {
 
 	async removeAppl(id: string, header: object): Promise<void> {
 		try {
-			const dataVerify = this.verify.verifyToken(header);
-
-			const user = await this.userRepository.findOne({
-				email: dataVerify['email'],
-			});
-
+			const clearBody = {}; // in this function we don't need a request body
+			const dataUserAndBody: userAndBody =
+				await this.verify.callAllFunctions(clearBody, header);
 			await this.applicantRepository.delete({
-				id_user: user.id,
+				id_user: dataUserAndBody.user.id,
 				id: Number(id),
 			});
 			return;

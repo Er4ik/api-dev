@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
 import {
 	applicantCreateBody,
 	applicantUpdateBody,
@@ -9,8 +10,13 @@ import {
 	positionCreateBody,
 	positionUpdateBody,
 } from 'src/position/position.interface';
-import { Like } from 'typeorm';
-import { availableBodyValue } from './helper.interface';
+import { User } from 'src/user/user.entity';
+import { Like, Repository } from 'typeorm';
+import {
+	availableBodyValue,
+	userAndBody,
+	verifyDataToken,
+} from './helper.interface';
 
 @Injectable()
 export class ValidationBody {
@@ -61,7 +67,7 @@ export class ValidationBody {
 }
 
 @Injectable()
-export class HelperPosApp {
+export class PreparePositionApplicant {
 	async prepareQuery(query: getAllPosQuery): Promise<getAllPosQuery> {
 		const fields: getAllPosQuery = {};
 		for (const key in query) {
@@ -74,7 +80,13 @@ export class HelperPosApp {
 		return fields;
 	}
 
-	async prepareBodyToAdd(body: positionUpdateBody | positionCreateBody) {
+	async prepareBodyToAdd(
+		body:
+			| applicantCreateBody
+			| applicantUpdateBody
+			| positionCreateBody
+			| positionUpdateBody,
+	) {
 		const bodyToDB = {};
 		const arrKey = ['language', 'categories'];
 		for (const key in body) {
@@ -90,11 +102,43 @@ export class HelperPosApp {
 
 @Injectable()
 export class VerifyUser {
-	constructor(private jwtService: JwtService) {}
+	constructor(
+		private jwtService: JwtService,
+		@InjectRepository(User)
+		private readonly userRepository: Repository<User>,
+		private readonly helper: PreparePositionApplicant,
+	) {}
 
-	async verifyToken(header: object) {
+	async verifyToken(header: object): Promise<verifyDataToken> {
 		const token = header['authorization'].split(' ')[1];
-		const verToken = await this.jwtService.verify(token);
-		return verToken;
+		const verifyToken: verifyDataToken = await this.jwtService.verify(
+			token,
+		);
+		return verifyToken;
+	}
+
+	async findUser(verifyToken: verifyDataToken): Promise<User> {
+		return await this.userRepository.findOne({
+			email: verifyToken.email,
+		});
+	}
+
+	async prepareBodyToDB<bodyType>(
+		body: bodyType,
+		user: User,
+	): Promise<object> {
+		const bodyToDB = await this.helper.prepareBodyToAdd(body);
+		bodyToDB['id_user'] = user.id;
+		return bodyToDB;
+	}
+
+	async callAllFunctions<bodyType>(
+		body: bodyType,
+		header: object,
+	): Promise<userAndBody> {
+		const verifyToken: verifyDataToken = await this.verifyToken(header);
+		const user: User = await this.findUser(verifyToken);
+		const bodyToDB = await this.prepareBodyToDB(body, user);
+		return { user, bodyToDB };
 	}
 }

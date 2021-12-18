@@ -9,8 +9,8 @@ import * as bcrypt from 'bcryptjs';
 import { User } from './user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { parseWithoutProcessing } from 'handlebars';
-//import { HelperService } from "src/helper/helper.service";
+import { VerifyUser } from 'src/helper/helper.service';
+import { userAndBody, verifyDataToken } from 'src/helper/helper.interface';
 
 @Injectable()
 export class Auth {
@@ -35,8 +35,8 @@ export class UserService {
 		@InjectRepository(User)
 		private readonly userRepository: Repository<User>,
 		private readonly authService: Auth,
-		//private readonly helper: HelperService,
-		private jwtService: JwtService,
+		private readonly jwtService: JwtService,
+		private readonly verify: VerifyUser,
 	) {}
 
 	async checkExistsUser(email: string): Promise<userCreateBody> {
@@ -55,10 +55,23 @@ export class UserService {
 		}
 	}
 
+	async getUserByID(header: object): Promise<object> {
+		try {
+			const clearBody = {}; // in this function we don't need a request body
+			const dataUserAndBody: userAndBody =
+				await this.verify.callAllFunctions(clearBody, header);
+			return dataUserAndBody.user;
+		} catch (err) {
+			throw new HttpException(
+				`Error get uesr by id -> ${err}`,
+				HttpStatus.INTERNAL_SERVER_ERROR,
+			);
+		}
+	}
+
 	async loginUser(body: userLoginBody): Promise<string> {
 		try {
 			const userExists = await this.checkExistsUser(body.email);
-
 			if (userExists) {
 				const passwordFlag = await bcrypt.compare(
 					body.password,
@@ -79,7 +92,7 @@ export class UserService {
 				}
 			} else {
 				throw new HttpException(
-					'Users email already exists',
+					`User doesn't exists`,
 					HttpStatus.BAD_REQUEST,
 				);
 			}
@@ -113,9 +126,12 @@ export class UserService {
 
 	async updateUser(body: userUpdateBody, header: object): Promise<void> {
 		try {
-			const token = header['authorization'].split(' ')[1];
-			const verToken = this.jwtService.verify(token);
-			await this.userRepository.update({ email: verToken.email }, body);
+			const dataUserAndBody: verifyDataToken =
+				await this.verify.verifyToken(header);
+			await this.userRepository.update(
+				{ email: dataUserAndBody.email },
+				body,
+			);
 			return;
 		} catch (err) {
 			throw new HttpException(
@@ -127,9 +143,9 @@ export class UserService {
 
 	async deleteUser(header: object): Promise<void> {
 		try {
-			const token = header['authorization'].split(' ')[1];
-			const verToken = this.jwtService.verify(token);
-			await this.userRepository.delete({ email: verToken.email });
+			const dataUserAndBody: verifyDataToken =
+				await this.verify.verifyToken(header);
+			await this.userRepository.delete({ email: dataUserAndBody.email });
 			return;
 		} catch (err) {
 			throw new HttpException(

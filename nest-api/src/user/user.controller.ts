@@ -2,9 +2,11 @@ import {
 	Body,
 	Controller,
 	Delete,
+	Get,
 	Headers,
 	HttpCode,
 	HttpStatus,
+	Param,
 	Patch,
 	Post,
 	UseGuards,
@@ -18,6 +20,12 @@ import { UserService } from './user.service';
 @Controller()
 export class UserController {
 	constructor(private readonly userService: UserService) {}
+	@Get('/user')
+	@UseGuards(AuthService)
+	@HttpCode(HttpStatus.CREATED)
+	async getPositionByID(@Headers() header: object): Promise<object> {
+		return await this.userService.getUserByID(header);
+	}
 
 	@Post('/login')
 	@HttpCode(HttpStatus.CREATED)

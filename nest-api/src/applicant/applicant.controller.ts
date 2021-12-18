@@ -59,7 +59,7 @@ export class ApplicantController {
 		);
 	}
 
-	@Delete()
+	@Delete(':id')
 	@UseGuards(AuthService)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async removeApplicant(

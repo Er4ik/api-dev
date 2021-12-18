@@ -12,11 +12,12 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { EventEmitter } from 'stream';
 import { Applicant } from 'src/applicant/applicant.entity';
 import {
-	HelperPosApp,
+	PreparePositionApplicant,
 	ValidationBody,
 	VerifyUser,
 } from 'src/helper/helper.service';
 import { User } from 'src/user/user.entity';
+import { userAndBody } from 'src/helper/helper.interface';
 
 @Injectable()
 export class listener {
@@ -88,7 +89,7 @@ export class PositionService {
 		@InjectRepository(Position)
 		private readonly positionRepository: Repository<Position>,
 		private readonly valid: ValidationBody,
-		private readonly helper: HelperPosApp,
+		private readonly helper: PreparePositionApplicant,
 		private readonly listener: listener,
 		private readonly verify: VerifyUser,
 		@InjectRepository(User)
@@ -129,16 +130,10 @@ export class PositionService {
 	async createPos(body: positionCreateBody, header: object): Promise<void> {
 		try {
 			if (this.valid.checkValidBody(body)) {
-				const dataVerify: object = this.verify.verifyToken(header);
-				const user = await this.userRepository.findOne({
-					where: {
-						email: dataVerify['email']
-					}
-				});
-				const bodyToDB = await this.helper.prepareBodyToAdd(body);
-				bodyToDB['id_user'] = user.id;
-				await this.positionRepository.save(bodyToDB);
-				// this.listener.ee.emit('sendCreateUpdateMail', body);
+				const dataUserAndBody: userAndBody =
+					await this.verify.callAllFunctions(body, header);
+				await this.positionRepository.save(dataUserAndBody.bodyToDB);
+				this.listener.ee.emit('sendCreateUpdateMail', body);
 				return;
 			}
 			throw new HttpException(
@@ -157,16 +152,11 @@ export class PositionService {
 	): Promise<void> {
 		try {
 			if (this.valid.checkValidBody(body)) {
-				const dataVerify: object = this.verify.verifyToken(header);
-				const user = await this.userRepository.findOne({
-					where: {
-						email: dataVerify['email']
-					}
-				});
-				const bodyToDB = await this.helper.prepareBodyToAdd(body);
+				const dataUserAndBody: userAndBody =
+					await this.verify.callAllFunctions(body, header);
 				await this.positionRepository.update(
-					{ id: Number(id), id_user: user.id },
-					bodyToDB,
+					{ id: Number(id), id_user: dataUserAndBody.user.id },
+					dataUserAndBody.bodyToDB,
 				);
 				return;
 			}
@@ -181,13 +171,13 @@ export class PositionService {
 
 	async removePosition(id: string, header: object): Promise<void> {
 		try {
-			const dataVerify = this.verify.verifyToken(header);
-			const user = await this.userRepository.findOne({
-				where: {
-					email: dataVerify['email']
-				}
+			const clearBody = {}; // in this function we don't need a request body
+			const dataUserAndBody: userAndBody =
+				await this.verify.callAllFunctions(clearBody, header);
+			await this.positionRepository.delete({
+				id: Number(id),
+				id_user: dataUserAndBody.user.id,
 			});
-			await this.positionRepository.delete({id: Number(id), id_user: user.id});
 			return;
 		} catch (err) {
 			throw new HttpException(

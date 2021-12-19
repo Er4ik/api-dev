@@ -1,14 +1,10 @@
 {
 	"singleQuote": true,
-	"trailingComma": "es5",
+	"trailingComma": "all",
 	"useTabs": true,
 	"tabWidth": 4,
 	"quoteProps": "as-needed",
 	"arrowParens":"always",
 	"parser" : "flow",
-	"printWidth": 100,
-	"overrides": [{
-		"files": ".prettierrc",
-		"options": {"parser": "json"}
-	}]
+	"printWidth": 100
 }

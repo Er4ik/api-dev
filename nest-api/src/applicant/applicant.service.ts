@@ -1,18 +1,10 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { userAndBody } from 'src/helper/helper.interface';
-import {
-	PreparePositionApplicant,
-	ValidationBody,
-	VerifyUser,
-} from 'src/helper/helper.service';
+import { PreparePositionApplicant, ValidationBody, VerifyUser } from 'src/helper/helper.service';
 import { Repository } from 'typeorm';
 import { Applicant } from './applicant.entity';
-import {
-	applicantCreateBody,
-	applicantUpdateBody,
-	getAllApplQuery,
-} from './applicant.interface';
+import { applicantCreateBody, applicantUpdateBody, getAllApplQuery } from './applicant.interface';
 
 export class ApplicantService {
 	constructor(
@@ -55,29 +47,26 @@ export class ApplicantService {
 	async createAppl(body: applicantCreateBody, header: object): Promise<void> {
 		try {
 			if (this.valid.checkValidBody(body)) {
-				const dataUserAndBody: userAndBody =
-					await this.verify.callAllFunctions(body, header);
+				const dataUserAndBody: userAndBody = await this.verify.callAllFunctions(
+					body,
+					header,
+				);
 				await this.applicantRepository.save(dataUserAndBody.bodyToDB);
 				return;
 			}
-			throw new HttpException(
-				`Error validate create applicant`,
-				HttpStatus.BAD_REQUEST,
-			);
+			throw new HttpException(`Error validate create applicant`, HttpStatus.BAD_REQUEST);
 		} catch (err) {
 			throw new HttpException(err.message, err.status);
 		}
 	}
 
-	async updateAppl(
-		id: string,
-		body: applicantUpdateBody,
-		header: object,
-	): Promise<void> {
+	async updateAppl(id: string, body: applicantUpdateBody, header: object): Promise<void> {
 		try {
 			if (this.valid.checkValidBody(body)) {
-				const dataUserAndBody: userAndBody =
-					await this.verify.callAllFunctions(body, header);
+				const dataUserAndBody: userAndBody = await this.verify.callAllFunctions(
+					body,
+					header,
+				);
 				await this.applicantRepository.update(
 					{
 						id_user: Number(dataUserAndBody.user.id),
@@ -87,10 +76,7 @@ export class ApplicantService {
 				);
 				return;
 			}
-			throw new HttpException(
-				`Error validate update applicant`,
-				HttpStatus.BAD_REQUEST,
-			);
+			throw new HttpException(`Error validate update applicant`, HttpStatus.BAD_REQUEST);
 		} catch (err) {
 			throw new HttpException(err.message, err.status);
 		}
@@ -99,8 +85,10 @@ export class ApplicantService {
 	async removeAppl(id: string, header: object): Promise<void> {
 		try {
 			const clearBody = {}; // in this function we don't need a request body
-			const dataUserAndBody: userAndBody =
-				await this.verify.callAllFunctions(clearBody, header);
+			const dataUserAndBody: userAndBody = await this.verify.callAllFunctions(
+				clearBody,
+				header,
+			);
 			await this.applicantRepository.delete({
 				id_user: dataUserAndBody.user.id,
 				id: Number(id),

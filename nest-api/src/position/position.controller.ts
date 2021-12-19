@@ -58,10 +58,7 @@ export class PositionController {
 	@Delete(':id')
 	@UseGuards(AuthService)
 	@HttpCode(HttpStatus.NO_CONTENT)
-	async removePosition(
-		@Param('id') id: string,
-		@Headers() header: object,
-	): Promise<void> {
+	async removePosition(@Param('id') id: string, @Headers() header: object): Promise<void> {
 		return await this.positionService.removePosition(id, header);
 	}
 }

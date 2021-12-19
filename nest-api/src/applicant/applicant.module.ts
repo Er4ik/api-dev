@@ -2,11 +2,7 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/auth.service';
-import {
-	PreparePositionApplicant,
-	ValidationBody,
-	VerifyUser,
-} from 'src/helper/helper.service';
+import { PreparePositionApplicant, ValidationBody, VerifyUser } from 'src/helper/helper.service';
 import { User } from 'src/user/user.entity';
 import { Auth } from 'src/user/user.service';
 import { ApplicantController } from './applicant.controller';

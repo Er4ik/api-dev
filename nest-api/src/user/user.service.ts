@@ -1,9 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import {
-	userCreateBody,
-	userLoginBody,
-	userUpdateBody,
-} from './user.interface';
+import { userCreateBody, userLoginBody, userUpdateBody } from './user.interface';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { User } from './user.entity';
@@ -11,6 +7,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { VerifyUser } from 'src/helper/helper.service';
 import { userAndBody, verifyDataToken } from 'src/helper/helper.interface';
+import { FileService } from 'src/file/file.service';
 
 @Injectable()
 export class Auth {
@@ -21,9 +18,7 @@ export class Auth {
 		return hashPassword;
 	}
 
-	async generateToken(
-		user: userCreateBody | userUpdateBody,
-	): Promise<string> {
+	async generateToken(user: userCreateBody | userUpdateBody): Promise<string> {
 		const token = { name: user.name, email: user.email };
 		return this.jwtService.signAsync(token);
 	}
@@ -35,8 +30,8 @@ export class UserService {
 		@InjectRepository(User)
 		private readonly userRepository: Repository<User>,
 		private readonly authService: Auth,
-		private readonly jwtService: JwtService,
 		private readonly verify: VerifyUser,
+		private readonly fileService: FileService,
 	) {}
 
 	async checkExistsUser(email: string): Promise<userCreateBody> {
@@ -48,18 +43,17 @@ export class UserService {
 			});
 			return user;
 		} catch (err) {
-			throw new HttpException(
-				err.message,
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
 	async getUserByID(header: object): Promise<object> {
 		try {
 			const clearBody = {}; // in this function we don't need a request body
-			const dataUserAndBody: userAndBody =
-				await this.verify.callAllFunctions(clearBody, header);
+			const dataUserAndBody: userAndBody = await this.verify.callAllFunctions(
+				clearBody,
+				header,
+			);
 			return dataUserAndBody.user;
 		} catch (err) {
 			throw new HttpException(
@@ -73,10 +67,7 @@ export class UserService {
 		try {
 			const userExists = await this.checkExistsUser(body.email);
 			if (userExists) {
-				const passwordFlag = await bcrypt.compare(
-					body.password,
-					userExists.password,
-				);
+				const passwordFlag = await bcrypt.compare(body.password, userExists.password);
 				if (passwordFlag) {
 					const resBody = {
 						name: userExists.name,
@@ -85,23 +76,17 @@ export class UserService {
 					const token = await this.authService.generateToken(resBody);
 					return token;
 				} else {
-					throw new HttpException(
-						'Invalid email/password',
-						HttpStatus.BAD_REQUEST,
-					);
+					throw new HttpException('Invalid email/password', HttpStatus.BAD_REQUEST);
 				}
 			} else {
-				throw new HttpException(
-					`User doesn't exists`,
-					HttpStatus.BAD_REQUEST,
-				);
+				throw new HttpException(`User doesn't exists`, HttpStatus.BAD_REQUEST);
 			}
 		} catch (err) {
 			throw new HttpException(err.message, err.status);
 		}
 	}
 
-	async createUser(body: userCreateBody): Promise<void> {
+	async createUser(body: userCreateBody, photo: object): Promise<void> {
 		try {
 			const userExists = await this.checkExistsUser(body.email);
 			if (!userExists) {
@@ -110,28 +95,31 @@ export class UserService {
 					name: body.name,
 					email: body.email,
 					password: password,
-					photo: 'artem', //доделать
+					photo: '',
 				};
+				if (photo['photo']) {
+					const namePhoto = await this.fileService.saveFile(photo['photo'][0]);
+					bodyToDB.photo = namePhoto;
+					await this.userRepository.save(bodyToDB);
+					return;
+				}
+
 				await this.userRepository.save(bodyToDB);
 				return;
 			}
-			throw new HttpException(
-				'Email already exists',
-				HttpStatus.BAD_REQUEST,
-			);
+			throw new HttpException('Email already exists', HttpStatus.BAD_REQUEST);
 		} catch (err) {
 			throw new HttpException(err.message, err.status);
 		}
 	}
 
-	async updateUser(body: userUpdateBody, header: object): Promise<void> {
+	async updateUser(body: userUpdateBody, header: object, photo: object): Promise<void> {
 		try {
-			const dataUserAndBody: verifyDataToken =
-				await this.verify.verifyToken(header);
-			await this.userRepository.update(
-				{ email: dataUserAndBody.email },
-				body,
-			);
+			const dataUserAndBody: verifyDataToken = await this.verify.verifyToken(header);
+			const user = await this.userRepository.update({ email: dataUserAndBody.email }, body);
+			if (photo) {
+				await this.fileService.updateFile(user['photo'], photo['photo'][0]);
+			}
 			return;
 		} catch (err) {
 			throw new HttpException(
@@ -143,9 +131,9 @@ export class UserService {
 
 	async deleteUser(header: object): Promise<void> {
 		try {
-			const dataUserAndBody: verifyDataToken =
-				await this.verify.verifyToken(header);
-			await this.userRepository.delete({ email: dataUserAndBody.email });
+			const dataUserAndBody: verifyDataToken = await this.verify.verifyToken(header);
+			const user = await this.userRepository.delete({ email: dataUserAndBody.email });
+			await this.fileService.removeFile(user['photo']);
 			return;
 		} catch (err) {
 			throw new HttpException(

@@ -11,11 +11,7 @@ import {
 import { MailerService } from '@nestjs-modules/mailer';
 import { EventEmitter } from 'stream';
 import { Applicant } from 'src/applicant/applicant.entity';
-import {
-	PreparePositionApplicant,
-	ValidationBody,
-	VerifyUser,
-} from 'src/helper/helper.service';
+import { PreparePositionApplicant, ValidationBody, VerifyUser } from 'src/helper/helper.service';
 import { User } from 'src/user/user.entity';
 import { userAndBody } from 'src/helper/helper.interface';
 
@@ -130,40 +126,34 @@ export class PositionService {
 	async createPos(body: positionCreateBody, header: object): Promise<void> {
 		try {
 			if (this.valid.checkValidBody(body)) {
-				const dataUserAndBody: userAndBody =
-					await this.verify.callAllFunctions(body, header);
+				const dataUserAndBody: userAndBody = await this.verify.callAllFunctions(
+					body,
+					header,
+				);
 				await this.positionRepository.save(dataUserAndBody.bodyToDB);
 				this.listener.ee.emit('sendCreateUpdateMail', body);
 				return;
 			}
-			throw new HttpException(
-				`Error validate create position`,
-				HttpStatus.BAD_REQUEST,
-			);
+			throw new HttpException(`Error validate create position`, HttpStatus.BAD_REQUEST);
 		} catch (err) {
 			throw new HttpException(err.message, err.status);
 		}
 	}
 
-	async updatePos(
-		id: string,
-		body: positionUpdateBody,
-		header: object,
-	): Promise<void> {
+	async updatePos(id: string, body: positionUpdateBody, header: object): Promise<void> {
 		try {
 			if (this.valid.checkValidBody(body)) {
-				const dataUserAndBody: userAndBody =
-					await this.verify.callAllFunctions(body, header);
+				const dataUserAndBody: userAndBody = await this.verify.callAllFunctions(
+					body,
+					header,
+				);
 				await this.positionRepository.update(
 					{ id: Number(id), id_user: dataUserAndBody.user.id },
 					dataUserAndBody.bodyToDB,
 				);
 				return;
 			}
-			throw new HttpException(
-				`Error validate update position`,
-				HttpStatus.BAD_REQUEST,
-			);
+			throw new HttpException(`Error validate update position`, HttpStatus.BAD_REQUEST);
 		} catch (err) {
 			throw new HttpException(err.message, err.status);
 		}
@@ -172,8 +162,10 @@ export class PositionService {
 	async removePosition(id: string, header: object): Promise<void> {
 		try {
 			const clearBody = {}; // in this function we don't need a request body
-			const dataUserAndBody: userAndBody =
-				await this.verify.callAllFunctions(clearBody, header);
+			const dataUserAndBody: userAndBody = await this.verify.callAllFunctions(
+				clearBody,
+				header,
+			);
 			await this.positionRepository.delete({
 				id: Number(id),
 				id_user: dataUserAndBody.user.id,

@@ -52,20 +52,13 @@ export class ApplicantController {
 		@Body() updateApplDto: UpdateApplicantDto,
 		@Headers() header: object,
 	): Promise<void> {
-		return await this.applicantService.updateAppl(
-			id,
-			updateApplDto,
-			header,
-		);
+		return await this.applicantService.updateAppl(id, updateApplDto, header);
 	}
 
 	@Delete(':id')
 	@UseGuards(AuthService)
 	@HttpCode(HttpStatus.NO_CONTENT)
-	async removeApplicant(
-		@Param('id') id: string,
-		@Headers() header: object,
-	): Promise<void> {
+	async removeApplicant(@Param('id') id: string, @Headers() header: object): Promise<void> {
 		return await this.applicantService.removeAppl(id, header);
 	}
 }

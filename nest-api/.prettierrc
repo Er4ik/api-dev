@@ -4,7 +4,6 @@
 	"useTabs": true,
 	"tabWidth": 4,
 	"quoteProps": "as-needed",
-	"arrowParens":"always",
-	"parser" : "flow",
+	"arrowParens": "always",
 	"printWidth": 100
 }

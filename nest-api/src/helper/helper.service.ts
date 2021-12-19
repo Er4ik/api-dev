@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-	applicantCreateBody,
-	applicantUpdateBody,
-} from 'src/applicant/applicant.interface';
+import { applicantCreateBody, applicantUpdateBody } from 'src/applicant/applicant.interface';
 import {
 	getAllPosQuery,
 	positionCreateBody,
@@ -12,11 +9,7 @@ import {
 } from 'src/position/position.interface';
 import { User } from 'src/user/user.entity';
 import { Like, Repository } from 'typeorm';
-import {
-	availableBodyValue,
-	userAndBody,
-	verifyDataToken,
-} from './helper.interface';
+import { availableBodyValue, userAndBody, verifyDataToken } from './helper.interface';
 
 @Injectable()
 export class ValidationBody {
@@ -31,20 +24,14 @@ export class ValidationBody {
 	numberFieldBody: string[] = ['salary', 'id_user'];
 
 	checkValidBody(
-		body:
-			| positionCreateBody
-			| positionUpdateBody
-			| applicantCreateBody
-			| applicantUpdateBody,
+		body: positionCreateBody | positionUpdateBody | applicantCreateBody | applicantUpdateBody,
 	): boolean {
 		for (const key in body) {
 			if (!body[key]) {
 				return false;
 			} else if (this.arrFieldBody.includes(key)) {
 				for (const elem of body[key]) {
-					if (
-						!this.availableValue[key].includes(elem.toLowerCase())
-					) {
+					if (!this.availableValue[key].includes(elem.toLowerCase())) {
 						return false;
 					}
 				}
@@ -81,11 +68,7 @@ export class PreparePositionApplicant {
 	}
 
 	async prepareBodyToAdd(
-		body:
-			| applicantCreateBody
-			| applicantUpdateBody
-			| positionCreateBody
-			| positionUpdateBody,
+		body: applicantCreateBody | applicantUpdateBody | positionCreateBody | positionUpdateBody,
 	) {
 		const bodyToDB = {};
 		const arrKey = ['language', 'categories'];
@@ -111,9 +94,7 @@ export class VerifyUser {
 
 	async verifyToken(header: object): Promise<verifyDataToken> {
 		const token = header['authorization'].split(' ')[1];
-		const verifyToken: verifyDataToken = await this.jwtService.verify(
-			token,
-		);
+		const verifyToken: verifyDataToken = await this.jwtService.verify(token);
 		return verifyToken;
 	}
 
@@ -123,19 +104,13 @@ export class VerifyUser {
 		});
 	}
 
-	async prepareBodyToDB<bodyType>(
-		body: bodyType,
-		user: User,
-	): Promise<object> {
+	async prepareBodyToDB<bodyType>(body: bodyType, user: User): Promise<object> {
 		const bodyToDB = await this.helper.prepareBodyToAdd(body);
 		bodyToDB['id_user'] = user.id;
 		return bodyToDB;
 	}
 
-	async callAllFunctions<bodyType>(
-		body: bodyType,
-		header: object,
-	): Promise<userAndBody> {
+	async callAllFunctions<bodyType>(body: bodyType, header: object): Promise<userAndBody> {
 		const verifyToken: verifyDataToken = await this.verifyToken(header);
 		const user: User = await this.findUser(verifyToken);
 		const bodyToDB = await this.prepareBodyToDB(body, user);

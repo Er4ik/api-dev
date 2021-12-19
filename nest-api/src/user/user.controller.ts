@@ -6,11 +6,13 @@ import {
 	Headers,
 	HttpCode,
 	HttpStatus,
-	Param,
 	Patch,
 	Post,
+	UploadedFiles,
 	UseGuards,
+	UseInterceptors,
 } from '@nestjs/common';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthService } from 'src/auth/auth.service';
 import { UserCreateDto } from './dto/user-create.dto';
 import { UserLoginDto } from './dto/user-login.dto';
@@ -35,18 +37,24 @@ export class UserController {
 
 	@Post('/user')
 	@HttpCode(HttpStatus.CREATED)
-	async createUser(@Body() createUserDto: UserCreateDto): Promise<void> {
-		return await this.userService.createUser(createUserDto);
+	@UseInterceptors(FileFieldsInterceptor([{ name: 'photo', maxCount: 1 }]))
+	async createUser(
+		@Body() createUserDto: UserCreateDto,
+		@UploadedFiles() photo: object,
+	): Promise<void> {
+		return await this.userService.createUser(createUserDto, photo);
 	}
 
 	@Patch('/user')
 	@UseGuards(AuthService)
 	@HttpCode(HttpStatus.CREATED)
+	@UseInterceptors(FileFieldsInterceptor([{ name: 'photo', maxCount: 1 }]))
 	async updateUser(
 		@Body() updateUserDto: UserUpdateDto,
 		@Headers() header: object,
+		@UploadedFiles() photo: object,
 	): Promise<void> {
-		return await this.userService.updateUser(updateUserDto, header);
+		return await this.userService.updateUser(updateUserDto, header, photo);
 	}
 
 	@Delete('/user')

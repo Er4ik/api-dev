@@ -6,7 +6,6 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { UserModule } from './user/user.module';
 import { HelperModule } from './helper/helper.module';
-import { FileModule } from './file/file.module';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
@@ -16,7 +15,6 @@ import { AuthModule } from './auth/auth.module';
 		ApplicantModule,
 		UserModule,
 		HelperModule,
-		FileModule,
 		AuthModule,
 		MailerModule.forRootAsync({
 			useFactory: () => ({

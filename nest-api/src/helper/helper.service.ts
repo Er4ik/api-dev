@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { applicantCreateBody, applicantUpdateBody } from 'src/applicant/applicant.interface';
@@ -10,6 +10,73 @@ import {
 import { User } from 'src/user/user.entity';
 import { Like, Repository } from 'typeorm';
 import { availableBodyValue, userAndBody, verifyDataToken } from './helper.interface';
+import { existsSync, rmdir, writeFile } from 'fs';
+import { mkdir } from 'fs/promises';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const path = require('path');
+import { v4 as uuidv4 } from 'uuid';
+
+@Injectable()
+export class FileHandler {
+	async saveFile(pict: object): Promise<string> {
+		try {
+			const fileName = uuidv4() + '.jpg';
+			const filePath = path.resolve(__dirname, '..', 'static', fileName.split('.')[0]);
+			if (!existsSync(filePath)) {
+				mkdir(filePath, { recursive: true });
+			}
+			writeFile(path.resolve(filePath, fileName), pict['buffer'], (err) => {
+				if (err)
+					throw new HttpException(
+						`Error save photo -> ${err}`,
+						HttpStatus.INTERNAL_SERVER_ERROR,
+					);
+			});
+			return fileName;
+		} catch (err) {
+			throw new HttpException(err.message, err.status);
+		}
+	}
+
+	async removeFile(fileName: string): Promise<void> {
+		try {
+			const filePath = path.resolve(__dirname, '..', 'static', fileName.split('.')[0]);
+			rmdir(filePath, { recursive: true }, (err) => {
+				if (err)
+					throw new HttpException(
+						`Error remove photo -> ${err}`,
+						HttpStatus.INTERNAL_SERVER_ERROR,
+					);
+			});
+			return;
+		} catch (err) {
+			throw new HttpException(err.message, err.status);
+		}
+	}
+
+	async updateFile(fileName: string, pict: object): Promise<void> {
+		try {
+			const filePath = path.resolve(__dirname, '..', 'static', fileName.split('.')[0]);
+			rmdir(filePath, { recursive: true }, (err) => {
+				if (err)
+					throw new HttpException(
+						`Error remove photo -> ${err}`,
+						HttpStatus.INTERNAL_SERVER_ERROR,
+					);
+			});
+			writeFile(path.resolve(filePath, fileName), pict['buffer'], (err) => {
+				if (err)
+					throw new HttpException(
+						`Error save photo -> ${err}`,
+						HttpStatus.INTERNAL_SERVER_ERROR,
+					);
+			});
+			return;
+		} catch (err) {
+			throw new HttpException(err.message, err.status);
+		}
+	}
+}
 
 @Injectable()
 export class ValidationBody {
@@ -110,7 +177,11 @@ export class VerifyUser {
 		return bodyToDB;
 	}
 
-	async callAllFunctions<bodyType>(body: bodyType, header: object): Promise<userAndBody> {
+	// this method is necessary because other methods must be executed in sequence if needed
+	async callFunctionsVerifyAndFindUser<bodyType>(
+		body: bodyType,
+		header: object,
+	): Promise<userAndBody> {
 		const verifyToken: verifyDataToken = await this.verifyToken(header);
 		const user: User = await this.findUser(verifyToken);
 		const bodyToDB = await this.prepareBodyToDB(body, user);

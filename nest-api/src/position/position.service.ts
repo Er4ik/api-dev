@@ -126,10 +126,8 @@ export class PositionService {
 	async createPos(body: positionCreateBody, header: object): Promise<void> {
 		try {
 			if (this.valid.checkValidBody(body)) {
-				const dataUserAndBody: userAndBody = await this.verify.callAllFunctions(
-					body,
-					header,
-				);
+				const dataUserAndBody: userAndBody =
+					await this.verify.callFunctionsVerifyAndFindUser(body, header);
 				await this.positionRepository.save(dataUserAndBody.bodyToDB);
 				this.listener.ee.emit('sendCreateUpdateMail', body);
 				return;
@@ -143,10 +141,8 @@ export class PositionService {
 	async updatePos(id: string, body: positionUpdateBody, header: object): Promise<void> {
 		try {
 			if (this.valid.checkValidBody(body)) {
-				const dataUserAndBody: userAndBody = await this.verify.callAllFunctions(
-					body,
-					header,
-				);
+				const dataUserAndBody: userAndBody =
+					await this.verify.callFunctionsVerifyAndFindUser(body, header);
 				await this.positionRepository.update(
 					{ id: Number(id), id_user: dataUserAndBody.user.id },
 					dataUserAndBody.bodyToDB,
@@ -162,7 +158,7 @@ export class PositionService {
 	async removePosition(id: string, header: object): Promise<void> {
 		try {
 			const clearBody = {}; // in this function we don't need a request body
-			const dataUserAndBody: userAndBody = await this.verify.callAllFunctions(
+			const dataUserAndBody: userAndBody = await this.verify.callFunctionsVerifyAndFindUser(
 				clearBody,
 				header,
 			);

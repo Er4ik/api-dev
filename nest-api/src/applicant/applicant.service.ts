@@ -47,10 +47,8 @@ export class ApplicantService {
 	async createAppl(body: applicantCreateBody, header: object): Promise<void> {
 		try {
 			if (this.valid.checkValidBody(body)) {
-				const dataUserAndBody: userAndBody = await this.verify.callAllFunctions(
-					body,
-					header,
-				);
+				const dataUserAndBody: userAndBody =
+					await this.verify.callFunctionsVerifyAndFindUser(body, header);
 				await this.applicantRepository.save(dataUserAndBody.bodyToDB);
 				return;
 			}
@@ -63,10 +61,8 @@ export class ApplicantService {
 	async updateAppl(id: string, body: applicantUpdateBody, header: object): Promise<void> {
 		try {
 			if (this.valid.checkValidBody(body)) {
-				const dataUserAndBody: userAndBody = await this.verify.callAllFunctions(
-					body,
-					header,
-				);
+				const dataUserAndBody: userAndBody =
+					await this.verify.callFunctionsVerifyAndFindUser(body, header);
 				await this.applicantRepository.update(
 					{
 						id_user: Number(dataUserAndBody.user.id),
@@ -85,7 +81,7 @@ export class ApplicantService {
 	async removeAppl(id: string, header: object): Promise<void> {
 		try {
 			const clearBody = {}; // in this function we don't need a request body
-			const dataUserAndBody: userAndBody = await this.verify.callAllFunctions(
+			const dataUserAndBody: userAndBody = await this.verify.callFunctionsVerifyAndFindUser(
 				clearBody,
 				header,
 			);

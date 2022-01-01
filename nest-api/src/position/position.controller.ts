@@ -38,10 +38,10 @@ export class PositionController {
 	@UseGuards(AuthService)
 	@HttpCode(HttpStatus.CREATED)
 	async createPosition(
-		@Body() createPosBody: CreatePosBodyDto,
+		@Body() createPosBodyDto: CreatePosBodyDto,
 		@Headers() header: object,
 	): Promise<void> {
-		return await this.positionService.createPos(createPosBody, header);
+		return await this.positionService.createPos(createPosBodyDto, header);
 	}
 
 	@Patch(':id')
@@ -49,10 +49,10 @@ export class PositionController {
 	@HttpCode(HttpStatus.CREATED)
 	async updatePosition(
 		@Param('id') id: string,
-		@Body() updatePosBody: UpdatePosBodyDto,
+		@Body() updatePosBodyDto: UpdatePosBodyDto,
 		@Headers() header: object,
 	): Promise<void> {
-		return await this.positionService.updatePos(id, updatePosBody, header);
+		return await this.positionService.updatePos(id, updatePosBodyDto, header);
 	}
 
 	@Delete(':id')

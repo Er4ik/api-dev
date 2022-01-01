@@ -7,7 +7,9 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { VerifyUser } from 'src/helper/helper.service';
 import { userAndBody, verifyDataToken } from 'src/helper/helper.interface';
-import { FileService } from 'src/file/file.service';
+import { FileHandler } from 'src/helper/helper.service';
+import { Position } from 'src/position/position.entity';
+import { Applicant } from 'src/applicant/applicant.entity';
 
 @Injectable()
 export class Auth {
@@ -29,9 +31,13 @@ export class UserService {
 	constructor(
 		@InjectRepository(User)
 		private readonly userRepository: Repository<User>,
+		@InjectRepository(Position)
+		private readonly positionRepository: Repository<Position>,
+		@InjectRepository(Applicant)
+		private readonly applicantRepository: Repository<Applicant>,
 		private readonly authService: Auth,
 		private readonly verify: VerifyUser,
-		private readonly fileService: FileService,
+		private readonly fileService: FileHandler,
 	) {}
 
 	async checkExistsUser(email: string): Promise<userCreateBody> {
@@ -50,14 +56,14 @@ export class UserService {
 	async getUserByID(header: object): Promise<object> {
 		try {
 			const clearBody = {}; // in this function we don't need a request body
-			const dataUserAndBody: userAndBody = await this.verify.callAllFunctions(
+			const dataUserAndBody: userAndBody = await this.verify.callFunctionsVerifyAndFindUser(
 				clearBody,
 				header,
 			);
 			return dataUserAndBody.user;
 		} catch (err) {
 			throw new HttpException(
-				`Error get uesr by id -> ${err}`,
+				`Error get user by id -> ${err}`,
 				HttpStatus.INTERNAL_SERVER_ERROR,
 			);
 		}
@@ -115,8 +121,11 @@ export class UserService {
 
 	async updateUser(body: userUpdateBody, header: object, photo: object): Promise<void> {
 		try {
-			const dataUserAndBody: verifyDataToken = await this.verify.verifyToken(header);
-			const user = await this.userRepository.update({ email: dataUserAndBody.email }, body);
+			const emailNameFromToken: verifyDataToken = await this.verify.verifyToken(header);
+			const user = await this.userRepository.update(
+				{ email: emailNameFromToken.email },
+				body,
+			);
 			if (photo) {
 				await this.fileService.updateFile(user['photo'], photo['photo'][0]);
 			}
@@ -131,8 +140,17 @@ export class UserService {
 
 	async deleteUser(header: object): Promise<void> {
 		try {
-			const dataUserAndBody: verifyDataToken = await this.verify.verifyToken(header);
-			const user = await this.userRepository.delete({ email: dataUserAndBody.email });
+			const emailNameFromToken: verifyDataToken = await this.verify.verifyToken(header);
+			const user = await this.userRepository.findOne({ email: emailNameFromToken.email });
+			await this.userRepository.delete({
+				email: emailNameFromToken.email,
+			});
+			await this.positionRepository.delete({
+				id_user: user.id,
+			});
+			await this.applicantRepository.delete({
+				id_user: user.id,
+			});
 			await this.fileService.removeFile(user['photo']);
 			return;
 		} catch (err) {

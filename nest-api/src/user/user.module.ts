@@ -1,16 +1,17 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Applicant } from 'src/applicant/applicant.entity';
 import { AuthService } from 'src/auth/auth.service';
-import { FileService } from 'src/file/file.service';
-import { PreparePositionApplicant, VerifyUser } from 'src/helper/helper.service';
+import { FileHandler, PreparePositionApplicant, VerifyUser } from 'src/helper/helper.service';
+import { Position } from 'src/position/position.entity';
 import { UserController } from './user.controller';
 import { User } from './user.entity';
 import { Auth, UserService } from './user.service';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([User]),
+		TypeOrmModule.forFeature([User, Position, Applicant]),
 		JwtModule.register({
 			secret: 'SECRET',
 			signOptions: {
@@ -19,6 +20,6 @@ import { Auth, UserService } from './user.service';
 		}),
 	],
 	controllers: [UserController],
-	providers: [UserService, AuthService, Auth, VerifyUser, PreparePositionApplicant, FileService],
+	providers: [UserService, AuthService, Auth, VerifyUser, PreparePositionApplicant, FileHandler],
 })
 export class UserModule {}

@@ -8,10 +8,12 @@ import {
 	HttpStatus,
 	Patch,
 	Post,
+	Req,
 	UploadedFiles,
 	UseGuards,
 	UseInterceptors,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthService } from 'src/auth/auth.service';
 import { UserCreateDto } from './dto/user-create.dto';
@@ -27,6 +29,17 @@ export class UserController {
 	@HttpCode(HttpStatus.CREATED)
 	async getPositionByID(@Headers() header: object): Promise<object> {
 		return await this.userService.getUserByID(header);
+	}
+
+	@Get('/google')
+	@HttpCode(HttpStatus.CREATED)
+	@UseGuards(AuthGuard('google'))
+	async googleAuth(@Req() req) {}
+
+	@Get('google/redirect')
+	@UseGuards(AuthGuard('google'))
+	googleAuthRedirect(@Req() req) {
+		return this.userService.googleLogin(req);
 	}
 
 	@Post('/login')

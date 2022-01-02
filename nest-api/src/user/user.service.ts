@@ -69,6 +69,17 @@ export class UserService {
 		}
 	}
 
+	googleLogin(req) {
+		if (!req.user) {
+			return 'No user from google';
+		}
+
+		return {
+			message: 'User information from google',
+			user: req.user,
+		};
+	}
+
 	async loginUser(body: userLoginBody): Promise<string> {
 		try {
 			const userExists = await this.checkExistsUser(body.email);

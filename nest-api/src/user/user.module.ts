@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Applicant } from 'src/applicant/applicant.entity';
-import { AuthService } from 'src/auth/auth.service';
+import { AuthService, GoogleStrategy } from 'src/auth/auth.service';
 import { FileHandler, PreparePositionApplicant, VerifyUser } from 'src/helper/helper.service';
 import { Position } from 'src/position/position.entity';
 import { UserController } from './user.controller';
@@ -20,6 +20,14 @@ import { Auth, UserService } from './user.service';
 		}),
 	],
 	controllers: [UserController],
-	providers: [UserService, AuthService, Auth, VerifyUser, PreparePositionApplicant, FileHandler],
+	providers: [
+		UserService,
+		AuthService,
+		Auth,
+		VerifyUser,
+		PreparePositionApplicant,
+		FileHandler,
+		GoogleStrategy,
+	],
 })
 export class UserModule {}
